@@ -339,9 +339,12 @@ async function startAudio() {
   } catch (err) {
     console.error(err);
     const name = err && err.name;
+    const inFrame = window.self !== window.top;
     let msg = 'Gagal menyalakan mic. Coba lagi.';
-    if (name === 'NotAllowedError' || name === 'SecurityError') {
-      msg = 'Izin mic ditolak. Buka ⚙️ di Chrome → Izin situs → Mikrofon → Izinkan.';
+    if ((name === 'NotAllowedError' || name === 'SecurityError') && inFrame) {
+      msg = 'Mic diblokir karena app jalan di dalam jendela preview. Buka linknya langsung di Chrome.';
+    } else if (name === 'NotAllowedError' || name === 'SecurityError') {
+      msg = 'Izin mic ditolak. Tap 🔒 di address bar Chrome → Izin → Mikrofon → Izinkan, lalu muat ulang.';
     } else if (name === 'NotFoundError') {
       msg = 'Mic nggak terdeteksi di HP ini.';
     } else if (name === 'NotReadableError') {
