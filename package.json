@@ -4,7 +4,7 @@
   "private": true,
   "description": "VAGEL — pengubah suara real time ala telepon/room. PWA, tanpa API key, jalan offline.",
   "scripts": {
-    "start": "python3 -m http.server 8080 --bind 0.0.0.0",
+    "start": "node server.js",
     "test": "node tests/ui.test.js"
   },
   "devDependencies": {
