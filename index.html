@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>VAGEL : chat — Voice Lab</title>
+<meta name="description" content="VAGEL — pengubah suara real time. Semua diproses di HP kamu, tanpa API key, tanpa internet." />
+<meta name="theme-color" content="#06070d" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="VAGEL" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ── background ───────────────────────────────────────────── -->
+<div class="bg" aria-hidden="true">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+  <span class="vignette"></span>
+</div>
+
+<!-- ── sidebar ──────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sb-head">
+    <div class="brand">
+      <span class="logo">V</span>
+      <div class="brand-txt">
+        <strong>VAGEL</strong>
+        <small>voice lab</small>
+      </div>
+    </div>
+    <button class="icon-btn" id="closeSidebar" aria-label="Tutup menu">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <div class="sb-body">
+    <section class="sb-sec">
+      <h3>Efek suara</h3>
+      <div class="preset-list" id="presetListSidebar"></div>
+    </section>
+
+    <section class="sb-sec">
+      <h3>Kontrol manual</h3>
+      <label class="slider">
+        <span>Nada dasar <b id="pitchVal">0</b> st</span>
+        <input type="range" id="pitch" min="-12" max="12" step="1" value="0" />
+      </label>
+      <label class="slider">
+        <span>Robot <b id="ringVal">0</b>%</span>
+        <input type="range" id="ring" min="0" max="100" step="1" value="0" />
+      </label>
+      <label class="slider">
+        <span>Gema <b id="echoVal">0</b>%</span>
+        <input type="range" id="echo" min="0" max="100" step="1" value="0" />
+      </label>
+      <label class="slider">
+        <span>Distorsi <b id="driveVal">0</b>%</span>
+        <input type="range" id="drive" min="0" max="100" step="1" value="0" />
+      </label>
+      <label class="slider">
+        <span>Getar <b id="vibVal">0</b>%</span>
+        <input type="range" id="vib" min="0" max="100" step="1" value="0" />
+      </label>
+      <label class="slider">
+        <span>Volume <b id="gainVal">80</b>%</span>
+        <input type="range" id="gain" min="0" max="130" step="1" value="80" />
+      </label>
+    </section>
+
+    <section class="sb-sec">
+      <h3>Pengaturan</h3>
+      <div class="row">
+        <div class="row-txt"><b>Dengar di speaker</b><small>Monitor hasil efek secara langsung</small></div>
+        <button class="switch" id="monitorSw" data-on="1" aria-label="Monitor"><i></i></button>
+      </div>
+      <div class="row">
+        <div class="row-txt"><b>Redam noise</b><small>Matikan kalau suara jadi "berenang"</small></div>
+        <button class="switch" id="nsSw" data-on="0" aria-label="Noise suppression"><i></i></button>
+      </div>
+      <div class="row">
+        <div class="row-txt"><b>Tahan layar nyala</b><small>Supaya nggak mati waktu ngobrol</small></div>
+        <button class="switch" id="wakeSw" data-on="1" aria-label="Wake lock"><i></i></button>
+      </div>
+    </section>
+
+    <section class="sb-sec">
+      <h3>Info</h3>
+      <div class="stat"><span>Sample rate</span><b id="srInfo">—</b></div>
+      <div class="stat"><span>Tambahan delay</span><b id="latInfo">—</b></div>
+      <div class="stat"><span>Status</span><b id="stInfo">idle</b></div>
+      <p class="tiny">Semua audio diproses di HP kamu sendiri — tanpa server, tanpa API key, tanpa internet.</p>
+      <button class="ghost-btn" id="installBtn" hidden>Instal ke layar utama</button>
+      <button class="ghost-btn danger" id="resetBtn">Reset semua efek</button>
+      <p class="tiny credit">VAGEL voice lab · build 1.0</p>
+    </section>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<!-- ── app ──────────────────────────────────────────────────── -->
+<main class="app">
+
+  <header class="topbar">
+    <button class="icon-btn" id="openSidebar" aria-label="Menu">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M3 6h18M3 12h18M3 18h12"/></svg>
+    </button>
+    <div class="brand-mid">
+      <strong>VAGEL</strong>
+      <small id="roomLabel">ROOM 01</small>
+    </div>
+    <div class="badge" id="liveBadge"><i></i><span>SIAP</span></div>
+  </header>
+
+  <section class="stage">
+    <div class="orb" id="orb">
+      <span class="ring r1"></span>
+      <span class="ring r2"></span>
+      <span class="ring r3"></span>
+      <div class="core">
+        <span class="glyph" id="orbGlyph">🎙️</span>
+      </div>
+    </div>
+
+    <div class="stage-meta">
+      <div class="effect-name"><span id="effectName">Normal</span></div>
+      <div class="timer" id="timer">00:00</div>
+      <canvas class="wave" id="wave" height="72"></canvas>
+      <p class="hint" id="hint">Tekan tombol hijau buat mulai. Pakai headphone biar suara nggak balik ke mic.</p>
+    </div>
+  </section>
+
+  <section class="chips" id="chips" aria-label="Preset cepat"></section>
+
+  <section class="controls">
+    <button class="ctl" id="muteBtn" aria-label="Bisukan mic">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/></svg>
+      <span class="ctl-lbl">Mic</span>
+    </button>
+
+    <button class="main-btn" id="mainBtn">
+      <svg viewBox="0 0 24 24" class="ico main-ico"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+      <span class="main-lbl">MULAI</span>
+    </button>
+
+    <button class="ctl" id="recBtn" aria-label="Rekam">
+      <svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="7"/></svg>
+      <span class="ctl-lbl">Rekam</span>
+    </button>
+  </section>
+
+  <p class="foot-hint" id="footHint">Suara diproses di HP · tanpa API key · jalan offline</p>
+</main>
+
+<!-- ── record sheet ─────────────────────────────────────────── -->
+<div class="sheet" id="recSheet" aria-hidden="true">
+  <div class="sheet-card glass">
+    <div class="sheet-head">
+      <strong>Hasil rekaman</strong>
+      <button class="icon-btn" id="closeSheet" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <audio id="recAudio" controls playsinline></audio>
+    <div class="sheet-actions">
+      <a class="primary-btn" id="saveRec" download="vagel.webm">Simpan</a>
+      <button class="ghost-btn" id="shareRec">Bagikan</button>
+    </div>
+    <p class="tiny">Format webm/opus. Kalau HP nggak bisa buka, coba putar di aplikasi pemutar lain.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js" type="module"></script>
+</body>
+</html>
